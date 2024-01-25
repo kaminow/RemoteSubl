@@ -312,22 +312,26 @@ class TCPServer(socketserver.ThreadingTCPServer):
 
 
 def plugin_unloaded():
-    global server
-    say('Killing server...')
-    if server:
-        server.shutdown()
-        server.server_close()
+    global servers
+    say("Killing server...")
+    if servers:
+        for sever in servers:
+            server.shutdown()
+            server.server_close()
 
 
 def plugin_loaded():
-    global server
+    global servers
 
     # Load settings
     settings = sublime.load_settings("remote_subl.sublime-settings")
-    port = settings.get("port", 52698)
+    ports = settings.get("port", [52698])
     host = settings.get("host", "localhost")
 
     # Start server thread
-    server = TCPServer((host, port), ConnectionHandler)
-    Thread(target=server.serve_forever, args=[]).start()
-    say('Server running on {}:{} ...'.format(host, str(port)))
+    servers = []
+    for port in ports:
+        server = TCPServer((host, port), ConnectionHandler)
+        Thread(target=server.serve_forever, args=[]).start()
+        say("Server running on {}:{} ...".format(host, str(port)))
+        servers.append(server)
