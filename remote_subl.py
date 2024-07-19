@@ -143,7 +143,7 @@ class File:
         view.settings().set('remote_subl.host', self.host)
         view.settings().set('remote_subl.base_name', self.base_name)
 
-        # if the current view is attahced to another file object,
+        # if the current view is attached to another file object,
         # that file object has to be closed first.
         if view.id() in FILES:
             file = FILES.pop(view.id())
