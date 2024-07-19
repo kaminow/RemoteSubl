@@ -48,16 +48,28 @@ class File:
     def __init__(self, session):
         self.session = session
         self.env = {}
-        self.data = b""
+        self.data = [] # list of bytes
+        self.current_data_length = 0
+        self.file_size = None # The total length that we plan to read
         self.ready = False
 
     def append(self, line):
-        if len(self.data) < self.file_size:
-            self.data += line
+        # If appending this line would put us over the stated file size
+        if self.current_data_length + len(line) > self.file_size:
+            sublime.message_dialog("Unexpected Too Long");
+            # Trim
+            line = line[:(self.file_size - self.current_data_length)]
+            assert len(line) + self.current_data_length == self.file_size
 
-        if len(self.data) >= self.file_size:
-            self.data = self.data[:self.file_size]
+        self.data.append(line)
+        self.current_data_length += len(line)
+
+        # If we're done, end
+        if self.current_data_length == self.file_size:
             self.ready = True
+
+    def get_text(self):
+        return b"".join(self.data)
 
     def close(self, remove=True):
         self.session.send("close")
@@ -105,7 +117,7 @@ class File:
             self.base_name)
         try:
             with open(self.temp_path, "wb+") as temp_file:
-                temp_file.write(self.data)
+                temp_file.write(self.get_text())
                 temp_file.flush()
         except IOError as e:
             try:
