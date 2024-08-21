@@ -56,7 +56,6 @@ class File:
     def append(self, line):
         # If appending this line would put us over the stated file size
         if self.current_data_length + len(line) > self.file_size:
-            sublime.message_dialog("Unexpected Too Long");
             # Trim
             line = line[:(self.file_size - self.current_data_length)]
             assert len(line) + self.current_data_length == self.file_size
